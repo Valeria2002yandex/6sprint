@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -11,7 +12,6 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
 		return
@@ -33,41 +33,36 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Ошибка при получении файла", http.StatusInternalServerError)
+		http.Error(w, "Error retrieving file", http.StatusInternalServerError)
 		return
 	}
-
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		http.Error(w, "Failed to read file data", http.StatusInternalServerError)
+		http.Error(w, "Failed to read uploaded file", http.StatusInternalServerError)
 		return
 	}
 
-	convertedString, err := service.Conversion(string(data))
+	converted, err := service.Conversion(string(data))
 	if err != nil {
-		http.Error(w, "Conversion failed", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	timestamp := time.Now().UTC().Format("20060102_150405")
 	ext := filepath.Ext(handler.Filename)
-	outputFilename := timestamp + ext
-
-	outputFile, err := os.Create(outputFilename)
-	if err != nil {
-		http.Error(w, "Failed to create output file", http.StatusInternalServerError)
-		return
+	if ext == "" {
+		ext = ".txt"
 	}
-	defer outputFile.Close()
+	timestamp := time.Now().UTC().Format("20060102_150405")
+	newFileName := fmt.Sprintf("result_%s%s", timestamp, ext)
 
-	_, err = outputFile.Write([]byte(convertedString))
+	err = os.WriteFile(newFileName, []byte(converted), 0644)
 	if err != nil {
-		http.Error(w, "Failed to write to output file", http.StatusInternalServerError)
+		http.Error(w, "Failed to save file", http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(convertedString))
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	fmt.Fprint(w, converted)
 }

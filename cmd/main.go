@@ -8,13 +8,7 @@ import (
 )
 
 func main() {
-
-	logger := log.New(
-		os.Stdout,
-		"[SERVER] ",
-		log.LstdFlags|log.Lmicroseconds,
-	)
-
+	logger := log.New(os.Stdout, "", log.LstdFlags)
 	srv := server.NewServer(logger)
 
 	logger.Println("Starting server on", srv.Server.Addr)

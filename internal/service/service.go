@@ -2,8 +2,8 @@ package service
 
 import (
 	"errors"
-
 	"strings"
+	"unicode"
 
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/pkg/morse"
 )
@@ -12,36 +12,30 @@ var converter = morse.NewConverter(morse.DefaultMorse)
 
 func Conversion(text string) (string, error) {
 
-	str := strings.TrimSpace(text)
-	if str == "" {
+	s := strings.TrimSpace(text)
+	if s == "" {
 		return "", errors.New("input string is empty")
 	}
 
-	str = strings.ReplaceAll(str, "  ", " ")
-
 	isMorse := true
-	for _, r := range str {
-		switch r {
-		case '.', '-', ' ', '/', '\t', '\n':
-
-			continue
-		default:
-
+	for _, r := range s {
+		if unicode.IsLetter(r) {
 			isMorse = false
+			break
 		}
 	}
+
 	if isMorse {
-		result := converter.ToText(str)
-		if result == "" || strings.Contains(result, "?") {
+		result := converter.ToText(s)
+		if result == "" {
 			return "", errors.New("invalid morse code")
 		}
 		return result, nil
-	} else {
-
-		result := converter.ToMorse(str)
-		if result == "" {
-			return "", errors.New("failed to convert text to morse")
-		}
-		return result, nil
 	}
+
+	result := converter.ToMorse(s)
+	if result == "" {
+		return "", errors.New("invalid morse code")
+	}
+	return result, nil
 }
