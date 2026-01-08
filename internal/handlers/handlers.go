@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -16,7 +15,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	http.ServeFile(w, r, "./index.html")
+	http.ServeFile(w, r, "index.html")
 }
 
 func ConvertHandler(w http.ResponseWriter, r *http.Request) {
@@ -31,7 +30,7 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, handler, err := r.FormFile("file")
+	file, handler, err := r.FormFile("myFile")
 	if err != nil {
 		http.Error(w, "Error retrieving file", http.StatusInternalServerError)
 		return
@@ -51,18 +50,14 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ext := filepath.Ext(handler.Filename)
-	if ext == "" {
-		ext = ".txt"
-	}
-	timestamp := time.Now().UTC().Format("20060102_150405")
-	newFileName := fmt.Sprintf("result_%s%s", timestamp, ext)
+	timestamp := time.Now().UTC().Format("20060102150405") + ext
 
-	err = os.WriteFile(newFileName, []byte(converted), 0644)
+	err = os.WriteFile(timestamp, []byte(converted), 0644)
 	if err != nil {
 		http.Error(w, "Failed to save file", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprint(w, converted)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(converted))
 }
