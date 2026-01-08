@@ -11,18 +11,10 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
 	http.ServeFile(w, r, "index.html")
 }
 
 func ConvertHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -49,12 +41,11 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ext := filepath.Ext(handler.Filename)
-	timestamp := time.Now().UTC().Format("20060102150405") + ext
+	fileName := time.Now().UTC().String() + filepath.Ext(handler.Filename)
 
-	err = os.WriteFile(timestamp, []byte(converted), 0644)
+	err = os.WriteFile(fileName, []byte(converted), 0644)
 	if err != nil {
-		http.Error(w, "Failed to save file", http.StatusInternalServerError)
+		http.Error(w, "Ошибка при записи файлаe", http.StatusInternalServerError)
 		return
 	}
 

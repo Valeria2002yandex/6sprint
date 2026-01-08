@@ -11,9 +11,7 @@ func main() {
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 	srv := server.NewServer(logger)
 
-	logger.Println("Starting server on", srv.Server.Addr)
-	err := srv.Server.ListenAndServe()
-	if err != nil {
+	if err := srv.Server.ListenAndServe(); err != nil {
 		logger.Fatal("Server failed to run:", err)
 	}
 }
