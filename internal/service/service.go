@@ -25,17 +25,17 @@ func Conversion(text string) (string, error) {
 		}
 	}
 
+	var result string
 	if hasLetters {
-		result := converter.ToMorse(s)
-		if result == "" {
-			return "", errors.New("invalid morse code")
-		}
-		return result, nil
+		result = converter.ToMorse(s)
+	} else {
+
+		result = converter.ToText(s)
 	}
 
-	result := converter.ToText(s)
 	if result == "" {
-		return "", errors.New("invalid morse code")
+		return "", errors.New("conversion result is empty (invalid input)")
 	}
+
 	return result, nil
 }
