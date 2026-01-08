@@ -27,14 +27,17 @@ func Conversion(text string) (string, error) {
 
 	var result string
 	if hasLetters {
-		result = converter.ToMorse(s)
+		result = converter.ToMorse(strings.ToUpper(s))
+		if result == "" {
+			return "", errors.New("failed to convert text to morse")
+		}
 	} else {
 
 		result = converter.ToText(s)
 	}
 
 	if result == "" {
-		return "", errors.New("conversion result is empty (invalid input)")
+		return "", errors.New("invalid morse code")
 	}
 
 	return result, nil
