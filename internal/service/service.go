@@ -17,10 +17,19 @@ func Conversion(text string) (string, error) {
 		return "", errors.New("input string is empty")
 	}
 
-	isMorse := strings.IndexFunc(str, func(r rune) bool {
-		return r != '.' && r != '-' && r != ' ' && r != '/' && r != '\t' && r != '\n' && r != '\r'
-	}) == -1
+	str = strings.ReplaceAll(str, "  ", " ")
 
+	isMorse := true
+	for _, r := range str {
+		switch r {
+		case '.', '-', ' ', '/', '\t', '\n':
+
+			continue
+		default:
+
+			isMorse = false
+		}
+	}
 	if isMorse {
 		result := converter.ToText(str)
 		if result == "" || strings.Contains(result, "?") {

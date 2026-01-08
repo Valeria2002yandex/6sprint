@@ -8,10 +8,18 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "", log.LstdFlags)
+
+	logger := log.New(
+		os.Stdout,
+		"[SERVER] ",
+		log.LstdFlags|log.Lmicroseconds,
+	)
+
 	srv := server.NewServer(logger)
 
-	if err := srv.Server.ListenAndServe(); err != nil {
-		logger.Fatal(err)
+	logger.Println("Starting server on", srv.Server.Addr)
+	err := srv.Server.ListenAndServe()
+	if err != nil {
+		logger.Fatal("Server failed to run:", err)
 	}
 }

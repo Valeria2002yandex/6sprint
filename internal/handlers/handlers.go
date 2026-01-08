@@ -11,10 +11,6 @@ import (
 )
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -29,18 +25,15 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxUpload = 5 << 20
-	r.Body = http.MaxBytesReader(w, r.Body, maxUpload)
-
-	err := r.ParseMultipartForm(maxUpload)
+	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
-		http.Error(w, "Failed to parse form", http.StatusRequestEntityTooLarge)
+		http.Error(w, "Failed to parse form", http.StatusInternalServerError)
 		return
 	}
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Ошибка при получении файла", http.StatusBadRequest)
+		http.Error(w, "Ошибка при получении файла", http.StatusInternalServerError)
 		return
 	}
 
@@ -51,21 +44,18 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read file data", http.StatusInternalServerError)
 		return
 	}
-	if len(data) > maxUpload {
-		http.Error(w, "file too large", http.StatusRequestEntityTooLarge)
-		return
-	}
 
 	convertedString, err := service.Conversion(string(data))
 	if err != nil {
-		http.Error(w, "Conversion failed", http.StatusUnprocessableEntity)
+		http.Error(w, "Conversion failed", http.StatusInternalServerError)
 		return
 	}
 
 	timestamp := time.Now().UTC().Format("20060102_150405")
-	fileName := timestamp + filepath.Ext(handler.Filename)
+	ext := filepath.Ext(handler.Filename)
+	outputFilename := timestamp + ext
 
-	outputFile, err := os.Create(fileName)
+	outputFile, err := os.Create(outputFilename)
 	if err != nil {
 		http.Error(w, "Failed to create output file", http.StatusInternalServerError)
 		return
