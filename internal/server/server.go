@@ -20,7 +20,7 @@ func NewServer(logger *log.Logger) *Server {
 	router.HandleFunc("/upload", handlers.ConvertHandler)
 
 	server := &http.Server{
-		Addr:         "8080",
+		Addr:         ":8080",
 		Handler:      router,
 		ErrorLog:     logger,
 		ReadTimeout:  5 * time.Second,
