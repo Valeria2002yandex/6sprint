@@ -17,15 +17,15 @@ func Conversion(text string) (string, error) {
 		return "", errors.New("input string is empty")
 	}
 
-	isText := false
+	hasLetters := false
 	for _, r := range s {
 		if unicode.IsLetter(r) {
-			isText = true
+			hasLetters = true
 			break
 		}
 	}
 
-	if isText {
+	if hasLetters {
 		result := converter.ToMorse(s)
 		if result == "" {
 			return "", errors.New("invalid morse code")
