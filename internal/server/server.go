@@ -13,16 +13,13 @@ type Server struct {
 	Server *http.Server
 }
 
-// NewServer создаёт новый экземпляр сервера
 func NewServer(logger *log.Logger) *Server {
-	// Создаём HTTP-роутер
+
 	router := http.NewServeMux()
 
-	// Регистрируем хендлеры
 	router.HandleFunc("/", handlers.IndexHandler)
 	router.HandleFunc("/upload", handlers.ConvertHandler)
 
-	// Создаём экземпляр http.Server
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      router,
@@ -32,7 +29,6 @@ func NewServer(logger *log.Logger) *Server {
 		IdleTimeout:  15 * time.Second,
 	}
 
-	// Возвращаем структуру сервера
 	return &Server{
 		Logger: logger,
 		Server: server,

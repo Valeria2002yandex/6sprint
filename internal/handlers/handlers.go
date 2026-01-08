@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -30,15 +29,18 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20)
+	const maxUpload = 5 << 20
+	r.Body = http.MaxBytesReader(w, r.Body, maxUpload)
+
+	err := r.ParseMultipartForm(maxUpload)
 	if err != nil {
-		http.Error(w, "Failed to parse form", http.StatusInternalServerError)
+		http.Error(w, "Failed to parse form", http.StatusRequestEntityTooLarge)
 		return
 	}
 
 	file, handler, err := r.FormFile("file")
 	if err != nil {
-		http.Error(w, "Ошибка при получении файла", http.StatusInternalServerError)
+		http.Error(w, "Ошибка при получении файла", http.StatusBadRequest)
 		return
 	}
 
@@ -49,15 +51,19 @@ func ConvertHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read file data", http.StatusInternalServerError)
 		return
 	}
-
-	convertedString, err := service.Conversion(string(data))
-	if err != nil {
-		http.Error(w, "Conversion failed", http.StatusInternalServerError)
+	if len(data) > maxUpload {
+		http.Error(w, "file too large", http.StatusRequestEntityTooLarge)
 		return
 	}
 
-	timestamp := time.Now().UTC().String()
-	fileName := fmt.Sprintf("%s%s", timestamp, filepath.Ext(handler.Filename))
+	convertedString, err := service.Conversion(string(data))
+	if err != nil {
+		http.Error(w, "Conversion failed", http.StatusUnprocessableEntity)
+		return
+	}
+
+	timestamp := time.Now().UTC().Format("20060102_150405")
+	fileName := timestamp + filepath.Ext(handler.Filename)
 
 	outputFile, err := os.Create(fileName)
 	if err != nil {

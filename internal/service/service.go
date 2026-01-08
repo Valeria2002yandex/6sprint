@@ -8,7 +8,7 @@ import (
 	"github.com/Yandex-Practicum/go1fl-sprint6-final/pkg/morse"
 )
 
-var conventer = morse.NewConverter(morse.DefaultMorse)
+var converter = morse.NewConverter(morse.DefaultMorse)
 
 func Conversion(text string) (string, error) {
 
@@ -18,18 +18,18 @@ func Conversion(text string) (string, error) {
 	}
 
 	isMorse := strings.IndexFunc(str, func(r rune) bool {
-		return r != '.' && r != '-' && r != ' ' && r != '/'
+		return r != '.' && r != '-' && r != ' ' && r != '/' && r != '\t' && r != '\n' && r != '\r'
 	}) == -1
 
 	if isMorse {
-		result := conventer.ToText(str)
+		result := converter.ToText(str)
 		if result == "" || strings.Contains(result, "?") {
 			return "", errors.New("invalid morse code")
 		}
 		return result, nil
 	} else {
 
-		result := conventer.ToMorse(str)
+		result := converter.ToMorse(str)
 		if result == "" {
 			return "", errors.New("failed to convert text to morse")
 		}
